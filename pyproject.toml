@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "currency-scrapper"
+name = "currency-scraper"
 version = "0.1.0"
 description = ""
 authors = ["Karol Gajda <karol.gajda97@gmail.com>"]
@@ -12,10 +12,8 @@ fastapi = "^0.85.1"
 beautifulsoup4 = "^4.11.1"
 black = "^22.10.0"
 uvicorn = "^0.18.3"
+requests = "^2.28.1"
 
-
-[tool.poetry.group.dev.dependencies]
-pylint = "^2.15.4"
 
 [build-system]
 requires = ["poetry-core"]
