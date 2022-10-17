@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "currency-scrapper"
+version = "0.1.0"
+description = ""
+authors = ["Karol Gajda <karol.gajda97@gmail.com>"]
+readme = "README.md"
+packages = [{include = "currency_scrapper"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.85.1"
+beautifulsoup4 = "^4.11.1"
+black = "^22.10.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
