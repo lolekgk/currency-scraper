@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from scraper import scrap_currencies_from_html
+from currency_scraper.scraper import scrap_currencies_from_html
 
 app = FastAPI()
 
