@@ -36,10 +36,15 @@ def scrap_currencies_from_xml():
     return currencies
 
 
+def _get_page_soup(url: str) -> BeautifulSoup:
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, 'lxml')
+    return soup
+
+
 def scrap_currencies_from_html() -> dict[str, Currency]:
     url = 'https://www.nbp.pl/Kursy/KursyA.html'
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'lxml')
+    soup = _get_page_soup(url)
     currencies: dict[str, Currency] = {}
 
     for tr_tag in soup.tbody.find_all('tr', recursive=False):
