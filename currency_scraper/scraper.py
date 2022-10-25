@@ -1,66 +1,53 @@
-from __future__ import annotations
+import re
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
-from pydantic import BaseModel
 
-NAME, CODE, AVG_RATE = 0, 1, -1
+from models import Currency
 
-# WORKING FINE
-class Currency(BaseModel):
-    currency_name: str
-    convertion_rate: int
-    currency_avg_rate: float
-
-    # NOT WORKING
-    # def get_currency_convertion_rate(self, other: Currency):
-    #     return self.currency_avg_rate / other.currency_avg_rate
+BASE_URL = 'https://www.nbp.pl/'
 
 
-def scrap_currencies_from_xml():
-    # PROBLEM with mutable url -> changes number after a and date after z each day
-    url = 'https://www.nbp.pl/kursy/xml/a202z221018.xml'
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'xml')
-    currency_xml_tags = soup('pozycja')  # shortcut for find_all()
-    currencies: dict[str, Currency] = {}
-
-    for currency in currency_xml_tags:
-        currencies[currency.kod_waluty.string] = Currency(
-            currency_name=currency.nazwa_waluty.string,
-            convertion_rate=int(currency.przelicznik.string),
-            currency_avg_rate=float(
-                currency.kurs_sredni.string.replace(',', '.')
-            ),
-        )
-    return currencies
-
-
-def _get_page_soup(url: str) -> BeautifulSoup:
+def _get_page_soup(*, url: str, parser: str) -> BeautifulSoup:
     page = requests.get(url)
-    soup = BeautifulSoup(page.content, 'lxml')
-    return soup
+    return BeautifulSoup(page.content, parser)
 
 
-def scrap_currencies_from_html() -> dict[str, Currency]:
-    url = 'https://www.nbp.pl/Kursy/KursyA.html'
-    soup = _get_page_soup(url)
-    currencies: dict[str, Currency] = {}
+def _get_absolute_url_from_href(*, soup: BeautifulSoup, pattern: str) -> str:
+    relative_url = soup.find(href=re.compile(pattern)).get('href')
+    return urljoin(BASE_URL, relative_url)
 
-    for tr_tag in soup.tbody.find_all('tr', recursive=False):
-        # td.text[:-2] is there to get rid of '*)' sign in Ukrainian currency
-        currency_data = [
-            td.string if td.string is not None else td.text[:-2]
-            for td in tr_tag.find_all('td')
-        ]
-        # -3 is currency code start index - never changes, the rest is convertion rate eg. 100 HUF
-        currency_code = currency_data[CODE][-3:]
-        convertion_rate = int(currency_data[CODE][:-3])
 
-        currencies[currency_code] = Currency(
-            currency_name=currency_data[NAME],
-            convertion_rate=convertion_rate,
-            currency_avg_rate=float(currency_data[AVG_RATE].replace(',', '.')),
+def _get_html_table_page_soup() -> BeautifulSoup:
+    main_page_soup = _get_page_soup(url=BASE_URL, parser='lxml')
+    html_table_url = _get_absolute_url_from_href(
+        soup=main_page_soup, pattern='tabela'
+    )
+    return _get_page_soup(url=html_table_url, parser='lxml')
+
+
+def _get_xml_table_page_soup() -> BeautifulSoup:
+    html_table_soup = _get_html_table_page_soup()
+    xml_table_url = _get_absolute_url_from_href(
+        soup=html_table_soup, pattern='xml'
+    )
+    return _get_page_soup(url=xml_table_url, parser='xml')
+
+
+def scrap_currencies() -> list[dict]:
+    xml_table_page_soup = _get_xml_table_page_soup()
+    currencies: list[dict] = []
+
+    for currency in xml_table_page_soup('pozycja'):
+        currencies.append(
+            Currency(
+                currency_code=currency.kod_waluty.string,
+                currency_name=currency.nazwa_waluty.string,
+                convertion_rate=int(currency.przelicznik.string),
+                currency_avg_rate=float(
+                    currency.kurs_sredni.string.replace(',', '.')
+                ),
+            ).dict()
         )
-
     return currencies
