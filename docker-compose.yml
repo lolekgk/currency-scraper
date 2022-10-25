@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+    currency_scraper:
+        container_name: currency_scraper
+        build: . # points Dockerfile
+        ports:
+            - 80:80
+        depends_on:
+            - mongodb
+
+    mongodb:
+        container_name: mongodb
+        image: mongo
+        restart: always
+        ports:
+            - 27017:27017
+        volumes:
+            - ./mongodb_data:/data/db
