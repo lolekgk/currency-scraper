@@ -24,3 +24,7 @@ cover/
 
 ### VisualStudioCode ###
 /.vscode
+
+
+### Docker volumes
+/mongodb_data
