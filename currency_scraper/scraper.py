@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 
-from models import Currency
+from currency_scraper.models import Currency
 
 BASE_URL = 'https://www.nbp.pl/'
 
@@ -48,6 +48,6 @@ def scrap_currencies() -> list[dict]:
                 currency_avg_rate=float(
                     currency.kurs_sredni.string.replace(',', '.')
                 ),
-            ).dict()
+            ).dict()  # by_alias=True
         )
     return currencies

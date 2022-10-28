@@ -18,6 +18,6 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY ./currency_scraper /code/currency_scraper
 
-CMD ["uvicorn", "currency_scraper.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "currency_scraper.main:app", "--reload", "--host", "0.0.0.0", "--port", "80"]
 
 # https://fastapi.tiangolo.com/deployment/docker/
