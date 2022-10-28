@@ -4,13 +4,19 @@ services:
     currency_scraper:
         container_name: currency_scraper
         build: . # points Dockerfile
+        env_file:
+            - .env
+        environment:
+            - MONGODB_URI=mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongo_db:27017/
         ports:
             - 80:80
+        volumes:
+            - ./currency_scraper:/code/currency_scraper
         depends_on:
-            - mongodb
+            - mongo_db
 
-    mongodb:
-        container_name: mongodb
+    mongo_db:
+        container_name: mongo_db
         image: mongo
         restart: always
         env_file:
