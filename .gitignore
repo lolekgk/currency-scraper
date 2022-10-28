@@ -28,3 +28,9 @@ cover/
 
 ### Docker volumes
 /mongodb_data
+
+
+# Env variables
+*.env
+
+ideas.txt
