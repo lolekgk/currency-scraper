@@ -7,7 +7,7 @@ services:
         env_file:
             - .env
         environment:
-            - MONGODB_URI=mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongo_db:27017/
+            - MONGODB_URI=mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongo_db/
         ports:
             - 80:80
         volumes:
