@@ -26,11 +26,12 @@ cover/
 /.vscode
 
 
-### Docker volumes
+### Docker mongodb volume
 /mongodb_data
 
 
 # Env variables
 *.env
 
+# Project ideas file
 ideas.txt
