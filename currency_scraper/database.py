@@ -1,16 +1,10 @@
 import os
+from datetime import date, datetime, timedelta
 
-from dotenv import find_dotenv, load_dotenv
 from pymongo import MongoClient
 
-from currency_scraper.scraper import scrap_currencies
+from currency_scraper.scraper import NbpCurrencyScrapper
 from currency_scraper.singleton import Singleton
-
-load_dotenv(find_dotenv())
-
-# username = os.environ.get("MONGODB_USERNAME")
-# password = os.environ.get("MONGODB_PASSWORD")
-# uri = os.environ.get("MONGODB_URI")
 
 
 class Database(metaclass=Singleton):
@@ -19,32 +13,44 @@ class Database(metaclass=Singleton):
             os.environ.get("MONGODB_URI"), serverSelectionTimeoutMS=5000
         )
         self.db = self.client['currencies_db']
-        self.currency_collections = self.db['currencies']
+        self.currency_collections = self.client['currencies_db']['currencies']
 
     def get_all_currencies(self):
         self.insert_currencies()
-        result = self.currency_collections.find({}, {'_id': 0})
+        result = self.currency_collections.find({}, {'_id': 0}).sort(
+            'date', -1
+        )
+        return list(result)
+
+    def get_currency_from_all_dates(self, currency_code: str) -> list:
+        self.insert_currencies()
+        query = {'currency_code': currency_code.upper()}
+        result = self.currency_collections.find(query, {'_id': 0}).sort(
+            'date', -1
+        )
         return list(result)
 
     def insert_currencies(self):
-        self.currency_collections.insert_many(scrap_currencies())
+        scraper = NbpCurrencyScrapper()
+        date = scraper.scrap_publication_date()
+        query = {
+            'date': {
+                '$gte': date,
+                '$lt': date + timedelta(seconds=1),
+            }
+        }
+        if not self.currency_collections.find_one(query):
+            currencies = scraper.scrap_currencies_with_publication_date()
+            self.currency_collections.insert_many(currencies)
 
-
-# client = MongoClient(
-#     f"mongodb://{username}:{password}@localhost:27017/",
-#     serverSelectionTimeoutMS=2000,
-# )
-# client = MongoClient("mongodb://{user}:{password}@{host}:{port}")
-
-
-# currency_collections = db.currencies
-
-# currencies = scrap_currencies()
-# print(currencies)
-# x = currency_collections.insert_many(currencies)
-
-
-# print(x.inserted_ids)
-
-# for x in currency_collections.find():
-#     print(x)
+    def get_currency_from_provided_date(self, currency_code: str, date: date):
+        date = datetime.combine(date, datetime.min.time())
+        query = {
+            'date': {
+                '$gte': date,
+                '$lt': date + timedelta(seconds=1),
+            },
+            'currency_code': currency_code.upper(),
+        }
+        result = self.currency_collections.find_one(query, {'_id': 0})
+        return result
