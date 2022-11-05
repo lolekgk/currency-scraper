@@ -42,9 +42,8 @@ class NbpCurrencyScrapper:
         publication_date_str = xml_table_page.find('data_publikacji').string
         return datetime.strptime(publication_date_str, '%Y-%m-%d')
 
-    def scrap_currencies_with_publication_date(self) -> list[dict]:
+    def scrap_currencies(self, publication_date: datetime) -> list[dict]:
         xml_table_page = self._get_xml_table_page()
-        publication_date = self.scrap_publication_date()
         currencies = []
 
         for currency in xml_table_page('pozycja'):
