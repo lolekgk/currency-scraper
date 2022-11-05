@@ -6,10 +6,9 @@ import requests
 from bs4 import BeautifulSoup
 
 from currency_scraper.models import Currency
-from currency_scraper.singleton import Singleton
 
 
-class NbpCurrencyScrapper(metaclass=Singleton):
+class NbpCurrencyScrapper:
 
     base_url = 'https://www.nbp.pl/'
 
