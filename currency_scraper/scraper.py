@@ -24,18 +24,24 @@ class NbpCurrencyScrapper:
         return urljoin(self.base_url, relative_url)
 
     def _get_html_table_page(self) -> BeautifulSoup:
-        main_page = self._get_page(url=self.base_url, parser='lxml')
+        main_page = NbpCurrencyScrapper._get_page(
+            url=self.base_url, parser='lxml'
+        )
         html_table_page_url = self._get_absolute_url_from_href(
             soup=main_page, pattern='tabela'
         )
-        return self._get_page(url=html_table_page_url, parser='lxml')
+        return NbpCurrencyScrapper._get_page(
+            url=html_table_page_url, parser='lxml'
+        )
 
     def _get_xml_table_page(self) -> BeautifulSoup:
         html_table_page = self._get_html_table_page()
         xml_table_page_url = self._get_absolute_url_from_href(
             soup=html_table_page, pattern='xml'
         )
-        return self._get_page(url=xml_table_page_url, parser='xml')
+        return NbpCurrencyScrapper._get_page(
+            url=xml_table_page_url, parser='xml'
+        )
 
     def scrap_publication_date(self) -> datetime:
         xml_table_page = self._get_xml_table_page()
