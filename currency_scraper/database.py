@@ -23,6 +23,10 @@ class Database(metaclass=Singleton):
             }
         }
 
+    @staticmethod
+    def _get_currency_filter(currency_code: str):
+        return {'currency_code': currency_code.upper()}
+
     def get_all_currencies(self):
         result = self.currency_collections.find({}, {'_id': 0}).sort(
             'date', -1
@@ -30,7 +34,7 @@ class Database(metaclass=Singleton):
         return list(result)
 
     def get_currency_from_all_dates(self, currency_code: str) -> list:
-        query = {'currency_code': currency_code.upper()}
+        query = Database._get_currency_filter(currency_code)
         result = self.currency_collections.find(query, {'_id': 0}).sort(
             'date', -1
         )
@@ -40,15 +44,17 @@ class Database(metaclass=Singleton):
         date = datetime.combine(
             date, datetime.min.time()
         )  # convert date(pymongo does not support it) to datetime
-        query = Database._get_date_filter(date) | {
-            'currency_code': currency_code.upper()
-        }
+        query = Database._get_date_filter(
+            date
+        ) | Database._get_currency_filter(currency_code)
         result = self.currency_collections.find_one(query, {'_id': 0})
         return result
 
     def is_date_in_database(self, date: datetime):
         query = Database._get_date_filter(date)
-        return self.currency_collections.find_one(query)
+        if self.currency_collections.find_one(query):
+            return True
+        return False
 
     def insert_currencies(self, currencies: list[dict]):
         self.currency_collections.insert_many(currencies)
