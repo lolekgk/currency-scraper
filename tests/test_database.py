@@ -160,13 +160,10 @@ class TestDatabase:
         result = database_object.is_date_in_database(date_fix)
         assert result is True
 
-    def test_insert_currencies(
-        self, mocked_database_fix, usd_currency, eur_currency
-    ):
+    def test_insert_currencies(self, mocked_database_fix, mocked_db_data_fix):
         database_object = Database()
         mocked_collection = Mock()
-        currencies = [eur_currency, usd_currency]
-        mocked_collection.insert_many.return_value = currencies
+        mocked_collection.insert_many.return_value = mocked_db_data_fix
         database_object.currency_collections = mocked_collection
-        result = database_object.insert_currencies(currencies)
-        assert result == currencies
+        result = database_object.insert_currencies(mocked_db_data_fix)
+        assert result == mocked_db_data_fix
