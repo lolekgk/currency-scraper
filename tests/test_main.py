@@ -82,7 +82,9 @@ def all_currencies_expected_result_fix():
 def mocked_database_fix(
     currency_usd_fix, currency_usd_2_fix, currency_eur_fix
 ):
-    with patch('currency_scraper.main.Database') as mocked_database:
+    with patch(
+        'currency_scraper.main.Database', autospec=True
+    ) as mocked_database:
         database_instance = Mock()
         database_instance.get_all_currencies.return_value = [
             currency_usd_2_fix,
@@ -104,6 +106,7 @@ def mocked_database_fix(
         ]
         mocked_database.return_value = database_instance
         yield mocked_database
+        del mocked_database
 
 
 @pytest.fixture
@@ -116,6 +119,7 @@ def mocked_scraper_fix():
         scraper_instance.scrap_currencies.return_value = 'test'
         mocked_scraper.return_value = scraper_instance
         yield mocked_scraper
+        del mocked_scraper
 
 
 @pytest.fixture
@@ -128,6 +132,7 @@ def failure_prone_mocked_database_fix():
         database_instance.is_date_in_database.return_value = True
         mocked_database.return_value = database_instance
         yield mocked_database
+        del mocked_database
 
 
 class TestMain:
